@@ -28,12 +28,6 @@ dag = DAG(
 
 start = DummyOperator(task_id = 'ETL_Start',  dag = dag)
 
-create_tables = PostgresOperator(
-    task_id          = 'Create_Tables',  
-    postgres_conn_id = 'redshift',
-    sql              = 'create_tables.sql', #see template_searchpath
-    dag              = dag
-)
 
 stage_events = StageToRedshiftOperator(
     task_id          = 'Stage_Events',
@@ -98,7 +92,6 @@ quality_checks = DataQualityOperator(
 
 end = DummyOperator(task_id = 'ETL_Stop',  dag = dag)
 
-start >> create_tables
-create_tables >> [stage_events, stage_songs] >> load_songplays
+start >> [stage_events, stage_songs] >> load_songplays
 load_songplays >> [load_users, load_songs, load_artists, load_time] >> quality_checks
 quality_checks >> end
