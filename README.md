@@ -90,8 +90,7 @@ This operator runs checks on the fact and each dimension table to confirm the ro
 
 --- 
 ## Dataset
-2No. datasets are available for ingest to the Redshift Sparkify data warehouse, required to carry out relevant<br>
-song play data analysis.
+Two datasets are available for ingesting data into the Redshift Sparkify data warehouse.
 
     Song data: s3://udacity-dend/song_data
     Log data: s3://udacity-dend/log_data
