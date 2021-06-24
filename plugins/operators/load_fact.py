@@ -8,15 +8,25 @@ class LoadFactOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 # Define your operators params (with defaults) here
-                 # Example:
-                 # conn_id = your-connection-name
+                 conn_id   = 'redshift',
+                 table     = '',
+                 sql_query = '',
                  *args, **kwargs):
 
         super(LoadFactOperator, self).__init__(*args, **kwargs)
-        # Map params here
-        # Example:
-        # self.conn_id = conn_id
+        self.conn_id   = conn_id
+        self.table     = table
+        self.sql_query = sql_query
 
     def execute(self, context):
-        self.log.info('LoadFactOperator not implemented yet')
+        '''
+        Insert data into fact table from staging tables.
+        Parameters:
+        ----------
+        conn_id   (string) : Airflow connection id to redshift cluster
+        table     (string) : Target table located in redshift cluster
+        sql_query (string) : SQL query to select the insert data
+        '''
+        redshift = PostgresHook(postgres_conn_id = self.conn_id)
+        sql_insert = f'INSERT INTO {self.table} ({str(self.sql_query)})'
+        redshift.run(sql_insert)   

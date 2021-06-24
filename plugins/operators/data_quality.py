@@ -8,15 +8,37 @@ class DataQualityOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 # Define your operators params (with defaults) here
-                 # Example:
-                 # conn_id = your-connection-name
+                 conn_id = 'redshift',
+                 queries = [],
                  *args, **kwargs):
 
         super(DataQualityOperator, self).__init__(*args, **kwargs)
-        # Map params here
-        # Example:
-        # self.conn_id = conn_id
+        self.conn_id = conn_id
+        self.queries = queries
 
     def execute(self, context):
-        self.log.info('DataQualityOperator not implemented yet')
+        '''
+        Perform data quality checks by running a list of queries.
+        Parameters:
+        ----------
+        conn_id (string) : Airflow connection to redshift cluster
+        queries   (list) : List of check queries, specified as {'sql':'SELECT COUNT(*) FROM time WHERE hour < 0', 'expect':0}           
+        '''
+        redshift = PostgresHook(postgres_conn_id = self.conn_id)
+            
+        for query in self.queries:
+            
+            sql = query.get('sql')
+            if sql is None: 
+                self.log.error('Data quality check: no SQL expression specified.')
+                break
+
+            expect = query.get('expect')
+            if expect is None:
+                expect = 0
+             
+            count = redshift.get_first(sql)[0] #https://stackoverflow.com/a/59420411
+            if (count != expect):
+                self.log.error(f'Check failed: {sql} returns {count}, expected: {expect}')
+            else:
+                self.log.info(f'Check passed: {sql} returns {count}.')
